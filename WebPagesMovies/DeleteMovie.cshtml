@@ -1,0 +1,92 @@
+﻿@{
+    var title = "";
+    var genre = "";
+    var year = "";
+    var movieId = "";
+
+    if (!IsPost)
+    {
+        if (!Request.QueryString["ID"].IsEmpty() && Request.QueryString["ID"].IsInt())
+        {
+            movieId = Request.QueryString["ID"];
+            var db = Database.Open("HomeMovies");
+            var dbCommand = "SELECT * FROM Movies WHERE ID = @0";
+            var row = db.QuerySingle(dbCommand, movieId);
+            if (row != null)
+            {
+                title = row.Title;
+                genre = row.Genre;
+                year = row.Year;
+            }
+            else
+            {
+                Validation.AddFormError("No movie was found for that ID.");
+            }
+        }
+        else
+        {
+            Validation.AddFormError("No movie was found for that ID.");
+        }
+    }
+
+    if (IsPost && !Request["buttonDelete"].IsEmpty())
+    {
+        movieId = Request.Form["movieId"];
+        var db = Database.Open("HomeMovies");
+        var deleteCommand = "DELETE FROM Movies WHERE ID = @0";
+        db.Execute(deleteCommand, movieId);
+        Response.Redirect("~/MovieHome");
+    }
+}
+<style>
+    .container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        font-size: large;
+        background-color: lightgreen;
+        border: 1px solid #ccc;
+        margin-left: 600px;
+        margin-right: 600px;
+        
+    }
+
+    #style {
+        text-align: center;
+    }
+</style>
+<html>
+<head>
+    <title>Delete a Movie</title>
+</head>
+<body>
+    <h1 style="text-align:center">Delete a Movie</h1>
+    @Html.ValidationSummary()
+    <p style="text-align:center"><a href="~/MovieHome">Return to movie listing</a></p>
+
+    <form method="post" class="container">
+        <fieldset>
+            <legend>Movie Information</legend>
+
+            <p>
+                <label for="title">Title:</label>
+                <input type="text" name="title" value="@title" />
+            </p>
+
+            <p>
+                <label for="genre">Genre:</label>
+                <input type="text" name="genre" value="@genre" />
+            </p>
+
+            <p>
+                <label for="year">Year:</label>
+                <input type="text" name="year" value="@year" />
+            </p>
+
+            <input type="hidden" name="movieid" value="@movieId" />
+            <p><input type="submit" name="buttonDelete" value="Delete Movie" /></p>
+        </fieldset>
+
+    </form>
+    <p style="text-align:center"><a href="~/MovieHome">Return to movie listing</a></p>
+</body>
+</html>
